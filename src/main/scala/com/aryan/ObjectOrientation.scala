@@ -62,6 +62,38 @@ object ObjectOrientation extends App{
   val dinosaur = new Carnivour_anonymous
   * */
 
+  //singleton object
+  object MySingleton {
+    val mySpecialValue = 53278
+    def mySpecialMethod(): Int = 5327
+    def apply(x: Int): Int = x + 1 //apply method is a special method that allows us to call the object as if it were a function, without having to use the new keyword to create an instance of the object. It is often used in companion objects to provide a convenient way to create instances of a class or to define factory methods.
+  }
+  MySingleton.mySpecialMethod()
+  MySingleton.apply(65)
+  //or
+  MySingleton(65) //syntactic sugar for MySingleton.apply(65)
+  //equivalent to MySingleton.apply(65)
+
+  object Animal {
+    //companion object
+    //singleton object with the same name as the class, used to hold static members and factory methods for the class. It can access the private members of the class and vice versa.
+    val canLiveIndefinitely = false
+  }
+  val animalsCanLiveForever = Animal.canLiveIndefinitely //accessing the companion object
+
+  /*
+  case classes = lightweight data structures
+  - serializable
+  - have equality and hashcode methods implemented
+  - have a nice toString method implemented
+  - pattern matching
+  - companion object with apply method
+  * */
+  case class Person(name: String, age: Int) //case class automatically generates a companion object with an apply method, so we can create instances of the class without using the new keyword.
+
+  val bob = Person("Bob", 54) //equivalent to new Person("Bob", 54) Person.apply("Bob", 54)
+  print(bob.name) //accessing the field of the case class
+
 
 }
 
