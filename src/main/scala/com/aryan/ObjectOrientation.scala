@@ -13,6 +13,7 @@ object ObjectOrientation extends App{
     override val creatureType: String = "domestic"
     override def eat: Unit = println("crunch crunch")
   }
+  val aDog = new Dog("Lassie")
 
   class Cat(name:String) extends Animal //constructor definition
   val aCat = new Cat("Tom")
@@ -40,8 +41,26 @@ object ObjectOrientation extends App{
   // difference between abstract class and trait is that a class can extend only one abstract class but can mix in multiple traits. Also, traits are more flexible than abstract classes, as they can be mixed into any class, regardless
   // of its position in the class hierarchy, whereas abstract classes can only be extended by subclasses.
 
+  //scala has single class inheritance and multiple trait we called that mixin
+  class crocodile extends Animal with Carnivore {
+    override def eat(animal: Animal): Unit = println(s"I'm a croc and I'm eating ${animal.creatureType}")
+  }
 
+  val aCroc = new crocodile
+  aCroc.eat(aDog)
+  aCroc eat aDog // infix notation, can be used when a method takes a single parameter, allowing for more natural and readable code. It is often used in DSLs (domain-specific languages) and for operator overloading.
 
+  //anonymous classes
+  val dinosaur = new Carnivore {
+    override def eat(animal: Animal): Unit = println("I'm a dinosaur and I'm eating you, animal")
+  }
+  /*
+  instead of
+  class Carnivour_anonymous extends Carnivore {
+    override def eat(animal: Animal): Unit = println("I'm a dinosaur and I'm eating you, animal")
+  }
+  val dinosaur = new Carnivour_anonymous
+  * */
 
 
 }
