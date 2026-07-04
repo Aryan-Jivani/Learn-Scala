@@ -2,6 +2,9 @@ package com.aryan
 
 object ObjectOrientation extends App{
 
+  //java equivalent: public static void main(String[] args) { ... }
+
+
   class Animal {
     val creatureType = "wild"
     def eat = println("nomnom")
@@ -92,7 +95,40 @@ object ObjectOrientation extends App{
   case class Person(name: String, age: Int) //case class automatically generates a companion object with an apply method, so we can create instances of the class without using the new keyword.
 
   val bob = Person("Bob", 54) //equivalent to new Person("Bob", 54) Person.apply("Bob", 54)
-  print(bob.name) //accessing the field of the case class
+  println (bob.name) //accessing the field of the case class
+
+  //expections
+  try {
+    val x: String = null
+    x.length
+  } catch {
+    case e: Exception => println("Caught an exception: " + e.getMessage)
+  } finally {
+    println("Finally block executed")
+  }
+
+  //generics
+//  class MyList[T] {
+    //A is a type parameter, can be any type, we can use it to define
+    //a list of any type, similar to templates in C++
+    //def head:T
+    //def tail:MyList[T]
+
+//  }
+
+  val aList = List[Int](1,2,3) //List is a generic class
+  print(aList.head) //head is a method that returns the first element of the list
+
+  //Point#1: in Scala we usually operate with IMMUTABLE values/objects
+  //Any modification to an object must return ANOTHER object
+  val reversedList = aList.reverse //reverse is a method that returns a new list with the elements in reverse order
+  /*
+    benefits of immutability:
+    1. works miracles in multithreaded/distributed envs
+    2. helps making sense of the code ("reasoning about")
+  */
+
+  //Point#2: Scala is closest to the OOP ideal
 
 
 }
