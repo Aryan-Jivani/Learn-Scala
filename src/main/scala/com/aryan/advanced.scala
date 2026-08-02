@@ -1,7 +1,8 @@
 package com.aryan
 
 import scala.concurrent._
-import scala.util.*
+// import scala.util.* // for Try, Success, Failure works in scala 3
+import scala.util._ // for Try, Success, Failure works in scala 2
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object advanced extends App {

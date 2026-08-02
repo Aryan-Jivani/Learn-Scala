@@ -2,6 +2,9 @@ package com.aryan
 
 object Basics extends App {
 
+  //scala verison print
+  println(s"Scala version: ${util.Properties.versionString}")
+
   val meaningOfLife: Int =  32//constants are immutable values that cannot be changed after they are defined
 
   //int boolean char doulbe float long short byte string are the primitive data types in scala
@@ -19,6 +22,9 @@ object Basics extends App {
   val sum = 1 + 2 //simple expression
 
   val complexExpression = (1 + 2) * (3 - 4) / 5 //complex expression
+
+  val temp1: Double = 5.0 / 2; //same as c++ data works 
+  println(s"temp1: $temp1");
 
   println(complexExpression)
 
