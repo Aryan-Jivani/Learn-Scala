@@ -24,5 +24,40 @@ object UserDomain extends App {
   printUserResults(findUserById(1))
   printUserResults(findUserById(4))
 
+
+  def addUser(currentUsers: List[User], newUser:User): List[User] = {
+    currentUsers :+ newUser
+  }
+  def deleteUser(currentUsers: List[User], id: Long) : List[User] ={
+    currentUsers.filterNot(_.id == id)
+  }
+
+  val usersAfterAdd = addUser(
+    users,
+    User(4L, "Aryan4", "test4@gmail.com")
+  )
+
+  val usersAfterDelete = deleteUser(usersAfterAdd, 2L)
+
+  println(users)
+  println(usersAfterAdd)
+  println(usersAfterDelete)
+
+  def updateUser(currentUsers: List[User], updatedUser:User): List[User] = {
+
+    currentUsers.map( User =>{
+      if(User.id==updatedUser.id) updatedUser else User
+    })
+
+  }
+
+  val usersAfterUpdate = updateUser(
+    users,
+    User(2L, "Updated Aryan", "updated@gmail.com")
+  )
+
+  println(usersAfterUpdate)
+  println(users)
+
 }
 
