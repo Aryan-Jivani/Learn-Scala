@@ -59,5 +59,15 @@ object UserDomain extends App {
   println(usersAfterUpdate)
   println(users)
 
+
+  def addUserSafely(currentUsers: List[User], newUser: User): Either[String, List[User]] = {
+    if (currentUsers.exists(_.id == newUser.id))
+      Left("User with this ID already exists")
+    else
+      Right(currentUsers :+ newUser)
+  }
+  println(addUserSafely(users, User(2L, "Duplicate", "duplicate@gmail.com")))
+  println(addUserSafely(users, User(4L, "Aryan4", "test4@gmail.com")))
+
 }
 
