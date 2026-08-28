@@ -76,6 +76,7 @@ object advanced extends App {
   implicit val myImplicitInt: Int = 46
   //  implicit val myImplicitInt2: Int = 47 //will not work because there can be only one implicit value of a given type in scope
   println(aMethodWithImplicitArgs) // 47
+  println(aMethodWithImplicitArgs)
 
   //2. Implicit conversions
   //binds to the type of the value, not the name of the
