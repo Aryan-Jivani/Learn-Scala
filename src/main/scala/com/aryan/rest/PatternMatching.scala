@@ -1,4 +1,4 @@
-package com.aryan
+package com.aryan.rest
 
 object PatternMatching extends App {
 

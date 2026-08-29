@@ -1,4 +1,4 @@
-package com.aryan
+package com.aryan.rest
 
 import scala.concurrent._
 // import scala.util.* // for Try, Success, Failure works in scala 3
