@@ -19,12 +19,32 @@ class UserServerSpec
   val route = UserServer.createRoutes(testUsers)
 
   "User routes" should {
-
     "return all users for GET /users" in {
 
       Get("/users") ~> route ~> check {
         status shouldEqual StatusCodes.OK
         responseAs[List[User]] shouldEqual testUsers
+      }
+    }
+    "return one user for GET /users/{id}" in {
+      Get("/users/10") ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[User] shouldEqual testUsers.head
+      }
+    }
+    "return 404 for an unknown user ID" in {
+      Get("/users/99") ~> route ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[String] shouldEqual "User with id 99 not found"
+      }
+    }
+    "return the created user for POST /users" in {
+      val newUser =
+        User(20L, "New User", "new@example.com")
+
+      Post("/users", newUser) ~> route ~> check {
+        status shouldEqual StatusCodes.Created
+        responseAs[User] shouldEqual newUser
       }
     }
   }

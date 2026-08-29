@@ -31,6 +31,6 @@ jobs:
 
     - name: Set up sbt
       uses: sbt/setup-sbt@v1
-    
-    - name: Run tests
-      run: sbt test
+
+    - name: Run tests with coverage
+      run: sbt clean coverage test coverageReport
