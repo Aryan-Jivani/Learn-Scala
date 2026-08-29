@@ -1,6 +1,7 @@
 package com.aryan.rest
 
 case class User(id : Long , name : String ,  email: String)
+case class UpdateUserRequest(name: String,email: String)
 
 object UserDomain extends App {
 
@@ -66,7 +67,7 @@ object UserDomain extends App {
     else
       Right(currentUsers :+ newUser)
   }
-  println(addUserSafely(users, User(2L, "Duplicate", "duplicate@gmail.com")))
+  println(addUserSafely(users, User(5L, "Duplicate", "duplicate@gmail.com")))
   println(addUserSafely(users, User(4L, "Aryan4", "test4@gmail.com")))
 
 }

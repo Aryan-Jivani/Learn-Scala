@@ -44,12 +44,44 @@ object UserServer {
           )
         },
         path("users" / LongNumber) { id =>
-          get {
-            users.find(_.id == id) match {
-              case Some(user) => complete(user)
-              case None       => complete(StatusCodes.NotFound, s"User with id $id not found")
+          concat(
+            get {
+              users.find(_.id == id) match {
+                case Some(user) => complete(user)
+                case None => complete(StatusCodes.NotFound, s"User with id $id not found")
+              }
+            },
+            put {
+              entity(as[UpdateUserRequest]) { request =>
+                users.find(_.id == id) match {
+                  case Some(existingUser) =>
+                    val updatedUser = existingUser.copy(
+                      name = request.name,
+                      email = request.email
+                    )
+
+                    complete(StatusCodes.OK, updatedUser)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      s"User with id $id not found"
+                    )
+                }
+              }
+            },
+            delete {
+              users.find(_.id == id) match {
+                case Some(_) =>
+                  complete(StatusCodes.NoContent)
+
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    s"User with id $id not found"
+                  )
+              }
             }
-          }
+          )
         }
       )
     }

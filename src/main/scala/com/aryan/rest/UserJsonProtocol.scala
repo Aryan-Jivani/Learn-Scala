@@ -7,4 +7,8 @@ object UserJsonProtocol extends DefaultJsonProtocol {
 
   implicit val userFormat: RootJsonFormat[User] =
     jsonFormat3(User.apply)
+
+  implicit val updateUserRequestFormat: RootJsonFormat[UpdateUserRequest] =
+    jsonFormat2(UpdateUserRequest.apply)
 }
+
