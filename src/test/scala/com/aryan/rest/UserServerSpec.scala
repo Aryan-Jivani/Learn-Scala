@@ -47,5 +47,33 @@ class UserServerSpec
         responseAs[User] shouldEqual newUser
       }
     }
+    "return the created user for PUT /users/10" in {
+      val updatedUser =
+        UpdateUserRequest( "New User", "new@example.com")
+      val expectedUser = User(10L, updatedUser.name, updatedUser.email)
+      Put("/users/10", updatedUser) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[User] shouldEqual expectedUser
+      }
+    }
+    "return 404 for PUT /users/100 when the user does not exist" in {
+      val updatedUser =
+        UpdateUserRequest( "New User", "new@example.com")
+      Put("/users/100", updatedUser) ~> route ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[String] shouldEqual s"User with id 100 not found"
+      }
+    }
+    "delete an existing user for DELETE /users/10" in {
+      Delete("/users/10") ~> route ~> check {
+        status shouldEqual StatusCodes.NoContent
+      }
+    }
+    "return 404 for DELETE /users/100 when the user does not exist" in {
+      Delete("/users/100") ~> route ~> check {
+        status shouldEqual StatusCodes.NotFound
+        responseAs[String] shouldEqual "User with id 100 not found"
+      }
+    }
   }
 }
