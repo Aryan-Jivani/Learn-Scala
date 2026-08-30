@@ -5,6 +5,7 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 val pekkoVersion = "1.1.5"
 val pekkoHttpVersion = "1.3.0"
 val scalatestVersion = "3.2.20"
+val logbackVersion = "1.6.3"
 
 ThisBuild/ scalaVersion:= "2.12.20"
 lazy val root = (project in file("."))
@@ -15,8 +16,10 @@ lazy val root = (project in file("."))
       "org.apache.pekko" %% "pekko-stream" % pekkoVersion, // handles asynchronous request/response streams.
       "org.apache.pekko" %% "pekko-http" % pekkoHttpVersion, // supplies the HTTP server and routing DSL.
       "org.apache.pekko" %% "pekko-http-spray-json" % pekkoHttpVersion, // converts case classes to and from JSON.
+      "ch.qos.logback" % "logback-classic" % logbackVersion, // provides logging functionality.
       "org.apache.pekko" %% "pekko-http-testkit" % pekkoHttpVersion % Test, // provides testing utilities for HTTP routes.
       "org.apache.pekko" %% "pekko-stream-testkit" % pekkoVersion % Test, // provides testing utilities for streams.
       "org.scalatest" %% "scalatest" % scalatestVersion % Test // provides testing framework for unit tests.
+
     )
   )

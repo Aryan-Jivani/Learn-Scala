@@ -2,10 +2,15 @@ package com.aryan.rest
 
 import com.aryan.rest.UserJsonProtocol._
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import org.apache.pekko.http.scaladsl.model.StatusCodes
 import org.apache.pekko.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.apache.pekko.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
+import org.apache.pekko.http.scaladsl.server.{
+  MalformedRequestContentRejection,
+  RejectionHandler,
+  Route
+}
 
 class UserServerSpec
   extends AnyWordSpec
@@ -35,7 +40,7 @@ class UserServerSpec
     "return 404 for an unknown user ID" in {
       Get("/users/99") ~> route ~> check {
         status shouldEqual StatusCodes.NotFound
-        responseAs[String] shouldEqual "User with id 99 not found"
+        responseAs[ApiError] shouldEqual ApiError("User with id 99 not found")
       }
     }
     "return the created user for POST /users" in {
@@ -61,7 +66,7 @@ class UserServerSpec
         UpdateUserRequest( "New User", "new@example.com")
       Put("/users/100", updatedUser) ~> route ~> check {
         status shouldEqual StatusCodes.NotFound
-        responseAs[String] shouldEqual s"User with id 100 not found"
+        responseAs[ApiError] shouldEqual ApiError("User with id 100 not found")
       }
     }
     "delete an existing user for DELETE /users/10" in {
@@ -72,7 +77,7 @@ class UserServerSpec
     "return 404 for DELETE /users/100 when the user does not exist" in {
       Delete("/users/100") ~> route ~> check {
         status shouldEqual StatusCodes.NotFound
-        responseAs[String] shouldEqual "User with id 100 not found"
+        responseAs[ApiError] shouldEqual ApiError("User with id 100 not found")
       }
     }
     "return 400 for POST /users when the name is blank" in {
@@ -81,7 +86,8 @@ class UserServerSpec
 
       Post("/users", invalidUser) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
-        responseAs[String] shouldEqual "Name must not be empty"
+        responseAs[ApiError] shouldEqual
+          ApiError("Name must not be empty")
       }
     }
     "return 400 for POST /users when the email is invalid" in {
@@ -90,7 +96,8 @@ class UserServerSpec
 
       Post("/users", invalidUser) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
-        responseAs[String] shouldEqual "Email must contain @"
+        responseAs[ApiError] shouldEqual
+          ApiError("Email must contain @")
       }
     }
     "return 400 for PUT /users/10 when the name is blank" in {
@@ -99,7 +106,21 @@ class UserServerSpec
 
       Put("/users/10", invalidRequest) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
-        responseAs[String] shouldEqual "Name must not be empty"
+        responseAs[ApiError] shouldEqual
+          ApiError("Name must not be empty")
+      }
+    }
+    "return 400 when POST JSON is missing a required field" in {
+      val incompleteJson =
+        HttpEntity(
+          ContentTypes.`application/json`,
+          """{"id":20,"name":"Aryan"}"""
+        )
+
+      Post("/users", incompleteJson) ~> Route.seal(route) ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        contentType shouldEqual ContentTypes.`application/json`
+        responseAs[ApiError] shouldEqual ApiError("Invalid request body")
       }
     }
   }

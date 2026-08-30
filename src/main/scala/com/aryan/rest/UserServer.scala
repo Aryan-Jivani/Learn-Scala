@@ -3,17 +3,23 @@ package com.aryan.rest
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.http.scaladsl.Http
-import org.apache.pekko.http.scaladsl.server.Route
 import org.apache.pekko.http.scaladsl.server.Directives._
 import org.apache.pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import UserJsonProtocol._
 import org.apache.pekko.http.scaladsl.model.StatusCodes
-
+import org.apache.pekko.http.scaladsl.server.{
+  MalformedRequestContentRejection,
+  RejectionHandler,
+  Route
+}
+import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext
 import scala.io.StdIn
+import scala.util.{Failure, Success}
 
 
 object UserServer {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   val initialUsers: List[User] = List(
     User(1L, "Aryan1", "test1@gmail.com"),
@@ -32,77 +38,89 @@ object UserServer {
       Right(user)
   }
 
-  def createRoutes(users: List[User]): Route = {
-    concat(
-      path("users") {
-        concat(
-          get {
-            complete(users)
-          },
-          post {
-            entity(as[User]) { newUser =>
-              validateUser(newUser) match {
-                case Left(errorMessage) =>
-                  complete(StatusCodes.BadRequest, errorMessage)
+  private val rejectionHandler: RejectionHandler =
+    RejectionHandler
+      .newBuilder()
+      .handle {
+        case MalformedRequestContentRejection(_, _) =>
+          complete(
+            StatusCodes.BadRequest,
+            ApiError("Invalid request body")
+          )
+      }
+      .result()
 
-                case Right(validUser) =>
-                  complete(StatusCodes.Created, validUser)
+  def createRoutes(users: List[User]): Route = {
+    handleRejections(rejectionHandler) {
+      concat(
+        path("users") {
+          concat(
+            get {
+              complete(users)
+            },
+            post {
+              entity(as[User]) { newUser =>
+                validateUser(newUser) match {
+                  case Left(errorMessage) =>
+                    complete(StatusCodes.BadRequest, ApiError(errorMessage))
+
+                  case Right(validUser) =>
+                    complete(StatusCodes.Created, validUser)
+                }
               }
             }
-          }
-        )
-      },
-      path("users" / LongNumber) { id =>
-        concat(
-          get {
-            users.find(_.id == id) match {
-              case Some(user) => complete(user)
-              case None => complete(StatusCodes.NotFound, s"User with id $id not found")
-            }
-          },
-          put {
-            entity(as[UpdateUserRequest]) { request =>
+          )
+        },
+        path("users" / LongNumber) { id =>
+          concat(
+            get {
               users.find(_.id == id) match {
-                case Some(existingUser) =>
-                  val updatedUser = existingUser.copy(
-                    name = request.name,
-                    email = request.email
-                  )
+                case Some(user) => complete(user)
+                case None => complete(StatusCodes.NotFound, ApiError(s"User with id $id not found"))
+              }
+            },
+            put {
+              entity(as[UpdateUserRequest]) { request =>
+                users.find(_.id == id) match {
+                  case Some(existingUser) =>
+                    val updatedUser = existingUser.copy(
+                      name = request.name,
+                      email = request.email
+                    )
 
-                  validateUser(updatedUser) match {
-                    case Left(errorMessage) =>
-                      complete(StatusCodes.BadRequest, errorMessage)
+                    validateUser(updatedUser) match {
+                      case Left(errorMessage) =>
+                        complete(StatusCodes.BadRequest, ApiError(errorMessage))
 
-                    case Right(validUser) =>
-                      complete(StatusCodes.OK, validUser)
-                  }
+                      case Right(validUser) =>
+                        complete(StatusCodes.OK, validUser)
+                    }
+
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError(s"User with id $id not found")
+                    )
+                }
+              }
+            },
+            delete {
+              users.find(_.id == id) match {
+                case Some(_) =>
+                  complete(StatusCodes.NoContent)
 
                 case None =>
                   complete(
                     StatusCodes.NotFound,
-                    s"User with id $id not found"
+                    ApiError(s"User with id $id not found")
                   )
               }
             }
-          },
-          delete {
-            users.find(_.id == id) match {
-              case Some(_) =>
-                complete(StatusCodes.NoContent)
-
-              case None =>
-                complete(
-                  StatusCodes.NotFound,
-                  s"User with id $id not found"
-                )
-            }
-          }
-        )
-      }
-    )
+          )
+        }
+      )
+    }
   }
-
-
 
   def main(args: Array[String]): Unit = {
     implicit val system: ActorSystem[Nothing] =
@@ -118,14 +136,35 @@ object UserServer {
         .newServerAt("localhost", 8080)
         .bind(route)
 
-    println("Server running at http://localhost:8080/users")
-    println("Press ENTER to stop")
+    logger.info("Starting User API")
+
+    bindingFuture.onComplete {
+      case Success(binding) =>
+        val address = binding.localAddress
+        val apiUrl = s"http://${address.getHostString}:${address.getPort}/users"
+        logger.info("User API started at {}", apiUrl)
+
+      case Failure(exception) =>
+        logger.error("Failed to start User API", exception)
+    }
+
+    logger.info("Press ENTER to stop")
 
     StdIn.readLine()
 
+    logger.info("User API shutdown requested")
+
     bindingFuture
       .flatMap(_.unbind())
-      .onComplete(_ => system.terminate())
+      .onComplete {
+        case Success(_) =>
+          logger.info("User API stopped")
+          system.terminate()
+
+        case Failure(exception) =>
+          logger.error("Failed to stop User API cleanly", exception)
+          system.terminate()
+      }
   }
 
 }

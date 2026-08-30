@@ -2,6 +2,7 @@ package com.aryan.rest
 
 case class User(id : Long , name : String ,  email: String)
 case class UpdateUserRequest(name: String,email: String)
+case class ApiError(message: String)
 
 object UserDomain extends App {
 
