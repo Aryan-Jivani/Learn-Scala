@@ -47,7 +47,7 @@ class UserServerSpec
         responseAs[User] shouldEqual newUser
       }
     }
-    "return the created user for PUT /users/10" in {
+    "update an existing user for PUT /users/10" in {
       val updatedUser =
         UpdateUserRequest( "New User", "new@example.com")
       val expectedUser = User(10L, updatedUser.name, updatedUser.email)
@@ -91,6 +91,15 @@ class UserServerSpec
       Post("/users", invalidUser) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
         responseAs[String] shouldEqual "Email must contain @"
+      }
+    }
+    "return 400 for PUT /users/10 when the name is blank" in {
+      val invalidRequest =
+        UpdateUserRequest("   ", "valid@example.com")
+
+      Put("/users/10", invalidRequest) ~> route ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[String] shouldEqual "Name must not be empty"
       }
     }
   }

@@ -69,7 +69,14 @@ object UserServer {
                     email = request.email
                   )
 
-                  complete(StatusCodes.OK, updatedUser)
+                  validateUser(updatedUser) match {
+                    case Left(errorMessage) =>
+                      complete(StatusCodes.BadRequest, errorMessage)
+
+                    case Right(validUser) =>
+                      complete(StatusCodes.OK, validUser)
+                  }
+
                 case None =>
                   complete(
                     StatusCodes.NotFound,
