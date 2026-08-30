@@ -21,6 +21,17 @@ object UserServer {
     User(3L, "Aryan3", "test3@gmail.com")
   )
 
+  def validateUser(user: User): Either[String, User] = {
+    val email = user.email.trim
+
+    if (user.name.trim.isEmpty)
+      Left("Name must not be empty")
+    else if (email.isEmpty || !email.contains("@"))
+      Left("Email must contain @")
+    else
+      Right(user)
+  }
+
   def createRoutes(users: List[User]): Route = {
     concat(
       path("users") {
@@ -30,7 +41,13 @@ object UserServer {
           },
           post {
             entity(as[User]) { newUser =>
-              complete(StatusCodes.Created, newUser)
+              validateUser(newUser) match {
+                case Left(errorMessage) =>
+                  complete(StatusCodes.BadRequest, errorMessage)
+
+                case Right(validUser) =>
+                  complete(StatusCodes.Created, validUser)
+              }
             }
           }
         )

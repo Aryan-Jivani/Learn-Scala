@@ -75,5 +75,23 @@ class UserServerSpec
         responseAs[String] shouldEqual "User with id 100 not found"
       }
     }
+    "return 400 for POST /users when the name is blank" in {
+      val invalidUser =
+        User(20L, "   ", "new@example.com")
+
+      Post("/users", invalidUser) ~> route ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[String] shouldEqual "Name must not be empty"
+      }
+    }
+    "return 400 for POST /users when the email is invalid" in {
+      val invalidUser =
+        User(21L, "Valid Name", "invalid-email")
+
+      Post("/users", invalidUser) ~> route ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[String] shouldEqual "Email must contain @"
+      }
+    }
   }
 }
